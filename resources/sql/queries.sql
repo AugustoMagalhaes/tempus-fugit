@@ -34,3 +34,14 @@ WHERE manager_id = :manager_id
 -- :doc deletes a user record given the id
 DELETE FROM users
 WHERE id = :id
+
+-- :name get-user-by-email :? :1
+-- :doc retrieves a user record given the email
+SELECT * FROM users
+WHERE email = :email
+AND is_active = TRUE
+
+-- :name delete-user-by-email! :! :n
+-- :doc deletes a user record given the email
+DELETE FROM users
+WHERE email = :email

@@ -44,7 +44,8 @@
                  [thheller/shadow-cljs "2.20.3" :scope "provided"]
                  [re-frame/re-frame "1.4.5"]
                  [reagent/reagent "1.2.0"]
-                 [day8.re-frame/http-fx "0.2.4"]]
+                 [day8.re-frame/http-fx "0.2.4"]
+                 [cheshire "5.12.0"]]
 
   :min-lein-version "2.0.0"
 
