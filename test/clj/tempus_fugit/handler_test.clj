@@ -1,52 +1,30 @@
 (ns tempus-fugit.handler-test
   (:require
-    [clojure.test :refer :all]
-    [ring.mock.request :refer :all]
-    [tempus-fugit.handler :refer :all]
-    [tempus-fugit.middleware.formats :as formats]
-    [muuntaja.core :as m]
-    [mount.core :as mount]))
-
-(defn parse-json [body]
-  (m/decode formats/instance "application/json" body))
+   [clojure.test :refer :all]
+   [ring.mock.request :as mock]
+   [tempus-fugit.handler :refer [app]]
+   [tempus-fugit.config :refer [env]]
+   [mount.core :as mount]))
 
 (use-fixtures
   :once
   (fn [f]
-    (mount/start #'tempus-fugit.config/env
-                 #'tempus-fugit.handler/app-routes)
-    (f)))
+    (mount/start
+     #'tempus-fugit.config/env
+     #'tempus-fugit.handler/app-routes)
+    (f)
+    (mount/stop
+     #'tempus-fugit.handler/app-routes)))
 
-(deftest test-app
-  (testing "main route"
-    (let [response ((app) (request :get "/"))]
+(deftest test-main-routes
+  (testing "home route returns 200"
+    (let [response ((app) (mock/request :get "/"))]
       (is (= 200 (:status response)))))
 
-  (testing "not-found route"
-    (let [response ((app) (request :get "/invalid"))]
+  (testing "inexistent route returns 404"
+    (let [response ((app) (mock/request :get "/inexistent-route123"))]
       (is (= 404 (:status response)))))
-  (testing "services"
 
-    (testing "success"
-      (let [response ((app) (-> (request :post "/api/math/plus")
-                                (json-body {:x 10, :y 6})))]
-        (is (= 200 (:status response)))
-        (is (= {:total 16} (m/decode-response-body response)))))
-
-    (testing "parameter coercion error"
-      (let [response ((app) (-> (request :post "/api/math/plus")
-                                (json-body {:x 10, :y "invalid"})))]
-        (is (= 400 (:status response)))))
-
-    (testing "response coercion error"
-      (let [response ((app) (-> (request :post "/api/math/plus")
-                                (json-body {:x -10, :y 6})))]
-        (is (= 500 (:status response)))))
-
-    (testing "content negotiation"
-      (let [response ((app) (-> (request :post "/api/math/plus")
-                                (body (pr-str {:x 10, :y 6}))
-                                (content-type "application/edn")
-                                (header "accept" "application/transit+json")))]
-        (is (= 200 (:status response)))
-        (is (= {:total 16} (m/decode-response-body response)))))))
+  (testing "/api/auth/me without session returns 401"
+    (let [response ((app) (mock/request :get "/api/auth/me"))]
+      (is (= 401 (:status response))))))
