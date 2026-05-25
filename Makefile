@@ -48,6 +48,15 @@ clean: ## Remove containers, volumes and build artifacts
 	docker compose down -v
 	rm -rf target .shadow-cljs node_modules
 
+# ── CI ────────────────────────────────────────────────────────────────────────
+lint: ## Run clj-kondo linter
+	docker compose run --rm dev lein run -m clj-kondo.main --lint src
+
+test: ## Run tests
+	docker compose run --rm dev lein test
+
+ci: lint test build ## Run full CI pipeline locally
+
 # ── Help ──────────────────────────────────────────────────────────────────────
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
