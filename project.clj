@@ -1,7 +1,8 @@
 (defproject tempus-fugit "0.1.0-SNAPSHOT"
-
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
+  :description "Time tracking application with role-based access control"
+  :url "https://github.com/SEU_USER/tempus-fugit"
+  :license {:name "Non-Commercial License"
+            :url "https://github.com/SEU_USER/tempus-fugit/blob/main/LICENSE"}
 
   :dependencies [[buddy/buddy-auth "3.0.323"]
                  [buddy/buddy-core "1.10.413"]
