@@ -1,0 +1,52 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: tempus
+      POSTGRES_PASSWORD: tempus_secret
+      POSTGRES_DB: tempus_fugit
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U tempus -d tempus_fugit" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "jdbc:postgresql://db:5432/tempus_fugit?user=tempus&password=tempus_secret"
+      APP_ENV: production
+    depends_on:
+      db:
+        condition: service_healthy
+
+  dev:
+    image: clojure:temurin-21-lein-alpine
+    working_dir: /app
+    volumes:
+      - .:/app
+      - lein_cache:/root/.lein
+      - m2_cache:/root/.m2
+    ports:
+      - "3000:3000"
+      - "7002:7002"
+      - "9630:9630"
+    environment:
+      DATABASE_URL: "jdbc:postgresql://db:5432/tempus_fugit?user=tempus&password=tempus_secret"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: lein run
+
+volumes:
+  postgres_data:
+  lein_cache:
+  m2_cache:
