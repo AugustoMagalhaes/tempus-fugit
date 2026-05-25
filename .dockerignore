@@ -1,0 +1,8 @@
+target/
+.shadow-cljs/
+.git/
+node_modules/
+*.log
+dev-config.edn
+.clj-kondo/
+.lsp/
