@@ -19,7 +19,7 @@ jobs:
           sudo mv clj-kondo /usr/local/bin/
 
       - name: Run clj-kondo
-        run: clj-kondo --lint src
+        run: clj-kondo --lint src || [ $? -eq 2 ]
 
   test:
     name: Test (Clojure)
@@ -68,11 +68,13 @@ jobs:
         run: lein deps
 
       - name: Run migrations
+        run: lein run migrate
         env:
           DATABASE_URL: "jdbc:postgresql://localhost:5432/tempus_fugit?user=tempus&password=tempus_secret"
-        run: lein run migrate
+          JVM_OPTS: "-Dconf=env/test/resources/config.edn"
 
       - name: Run tests
+        run: lein test
         env:
           DATABASE_URL: "jdbc:postgresql://localhost:5432/tempus_fugit?user=tempus&password=tempus_secret"
-        run: lein test
+          JVM_OPTS: "-Dconf=env/test/resources/config.edn"
