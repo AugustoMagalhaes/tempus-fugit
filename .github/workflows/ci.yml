@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    name: Lint (clj-kondo)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install clj-kondo
+        uses: DeLaGuardo/setup-clj-kondo@v1
+        with:
+          version: "2024.03.13"
+
+      - name: Run clj-kondo
+        run: clj-kondo --lint src
+
+  test:
+    name: Test (Clojure)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: tempus
+          POSTGRES_PASSWORD: tempus_secret
+          POSTGRES_DB: tempus_fugit
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Cache Maven deps
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('project.clj') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Install Leiningen
+        uses: DeLaGuardo/setup-leiningen@v1
+
+      - name: Install deps
+        run: lein deps
+
+      - name: Run migrations
+        env:
+          DATABASE_URL: "jdbc:postgresql://localhost:5432/tempus_fugit?user=tempus&password=tempus_secret"
+        run: lein run migrate
+
+      - name: Run tests
+        env:
+          DATABASE_URL: "jdbc:postgresql://localhost:5432/tempus_fugit?user=tempus&password=tempus_secret"
+        run: lein test
