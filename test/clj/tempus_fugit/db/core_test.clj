@@ -15,7 +15,9 @@
      #'tempus-fugit.config/env
      #'tempus-fugit.db.core/*db*)
     (migrations/migrate ["migrate"] (select-keys env [:database-url]))
-    (f)))
+    (f)
+    (mount/stop
+     #'tempus-fugit.db.core/*db*)))
 
 (deftest test-users
   (jdbc/with-transaction [t-conn *db* {:rollback-only true}]
