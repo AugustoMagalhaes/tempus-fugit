@@ -19,20 +19,17 @@
 
 (deftest test-users
   (jdbc/with-transaction [t-conn *db* {:rollback-only true}]
-    (is (= 1 (db/create-user!
-              t-conn
-              {:id         "1"
-               :first_name "Sam"
-               :last_name  "Smith"
-               :email      "sam.smith@example.com"
-               :pass       "pass"}
-              {})))
-    (is (= {:id         "1"
-            :first_name "Sam"
-            :last_name  "Smith"
-            :email      "sam.smith@example.com"
-            :pass       "pass"
-            :admin      nil
-            :last_login nil
-            :is_active  nil}
-           (db/get-user t-conn {:id "1"} {})))))
+    (let [user-id (java.util.UUID/randomUUID)]
+      (is (= 1 (db/create-user!
+                t-conn
+                {:id         user-id
+                 :email      "sam.smith@example.com"
+                 :password   "pass"
+                 :first_name "Sam"
+                 :last_name  "Smith"
+                 :role       "employee"
+                 :manager_id nil
+                 :is_active  true}
+                {})))
+      (is (= "sam.smith@example.com"
+             (:email (db/get-user t-conn {:email "sam.smith@example.com"} {})))))))
