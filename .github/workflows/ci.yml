@@ -67,14 +67,19 @@ jobs:
       - name: Install deps
         run: lein deps
 
+      - name: Check config file
+        run: cat ${{ github.workspace }}/env/test/resources/config.edn
+
+      - name: Create dev config
+        run: |
+          echo '{:database-url "jdbc:postgresql://localhost:5432/tempus_fugit?user=tempus&password=tempus_secret"}' > dev-config.edn
+
       - name: Run migrations
         run: lein run migrate
         env:
           DATABASE_URL: "jdbc:postgresql://localhost:5432/tempus_fugit?user=tempus&password=tempus_secret"
-          JVM_OPTS: "-Dconf=env/test/resources/config.edn"
 
       - name: Run tests
-        run: lein test
+        run: lein with-profile test test
         env:
           DATABASE_URL: "jdbc:postgresql://localhost:5432/tempus_fugit?user=tempus&password=tempus_secret"
-          JVM_OPTS: "-Dconf=env/test/resources/config.edn"
